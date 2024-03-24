@@ -1,0 +1,48 @@
+% 定义车辆模型参数
+m = 1500;       % 车辆质量 (kg)
+c_z = 10000;    % 垂向阻尼系数 (N.s/m)
+k_z = 200000;   % 垂向刚度系数 (N/m)
+c_y = 2000;     % 横向阻尼系数 (N.s/m)
+k_y = 15000;    % 横向刚度系数 (N/m)
+
+% 路面输入定义，例如随机路面激励
+t = 0:0.01:10;   % 时间序列
+input_z = randn(size(t));  % 假设垂向路面输入为随机信号
+input_y = sin(2*pi*0.5*t);  % 假设横向路面输入为正弦信号
+
+% 初始条件
+z0 = 0;         % 初始垂向位移
+v_z0 = 0;       % 初始垂向速度
+y0 = 0;         % 初始横向位移
+v_y0 = 0;       % 初始横向速度
+
+% 状态空间模型
+A = [0 1;-k_z/m c_z/m;0 1;-k_y/m c_y/m];
+B = [0;1/m;0;1/m];
+C = [1 0 0 0]; % 只关心位移输出
+D = [0];
+
+% 计算瞬态响应
+[t,z] = ode45(@(t,y) A*y + B*[input_z(t); input_y(t)], t, [z0 v_z0 y0 v_y0]);
+
+% 分离垂向和横向位移
+z_displacement = z(:,1);
+y_displacement = z(:,3);
+
+% 绘制响应曲线
+figure;
+subplot(2,1,1);
+plot(t, z_displacement, 'r', 'LineWidth', 1.5);
+xlabel('Time (s)');
+ylabel('Vertical Displacement');
+title('Vertical Response');
+
+subplot(2,1,2);
+plot(t, y_displacement, 'b', 'LineWidth', 1.5);
+xlabel('Time (s)');
+ylabel('Lateral Displacement');
+title('Lateral Response');
+
+grid on;
+
+% 更详细的分析可以在此基础上添加
